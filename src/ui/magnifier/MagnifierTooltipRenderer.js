@@ -34,7 +34,7 @@ import { isPointerWithinDockBounds } from './MagnifierMath.js';
 import { resolveTooltipColors } from '../dock/DockThemeResolver.js';
 import { animateMinimize, animateRestore } from '../effects/WindowEffects.js';
 import { isActorAlive, setBoxVertical, getBoxVertical, hexToRgba } from '../../core/Utils.js';
-import { hideTooltip, isInsideTooltip, isPointerInDockTooltipBridge } from './MagnifierTooltip.js';
+import { TOOLTIP_GAP, hideTooltip, isInsideTooltip, isPointerInDockTooltipBridge } from './MagnifierTooltip.js';
 
 
 const ARROW_HEIGHT = 12;
@@ -485,8 +485,7 @@ export function populateTooltipContent(dockActor, btn, appName, settings) {
         }
 
         const dockPosStr = Settings.dockPosition || 'BOTTOM';
-        const btnClassStr = btn.get_style_class_name ? btn.get_style_class_name() : (btn.style_class || '');
-        const gapAmt = (btnClassStr.includes('clock-module') || appName === 'Date & Time') ? 24 : 22;
+        const gapAmt = TOOLTIP_GAP;
 
         let tx = 0;
         let ty = 0;
@@ -507,7 +506,8 @@ export function populateTooltipContent(dockActor, btn, appName, settings) {
             ? Math.round(Math.max(MIN_ARROW_PADDING, Math.min(iconCenterX - tx, tw - MIN_ARROW_PADDING)))
             : Math.round(Math.max(MIN_ARROW_PADDING, Math.min(iconCenterY - ty, th - MIN_ARROW_PADDING)));
 
-        dockActor._magTooltip.ease({ x: tx, y: ty, width: tw, height: th, duration: 100, mode: Clutter.AnimationMode.EASE_OUT_QUAD });
+        dockActor._magTooltip.set_position(tx, ty);
+        dockActor._magTooltip.set_size(tw, th);
         if (dockActor._magTooltipBg._arrowCenter !== arrowCenter) {
             dockActor._magTooltipBg._arrowCenter = arrowCenter;
             dockActor._magTooltipBg.queue_repaint();

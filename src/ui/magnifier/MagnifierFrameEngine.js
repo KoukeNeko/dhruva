@@ -38,7 +38,7 @@ import { TOOLTIP_GAP, clearTooltipDelay, hideTooltip, isInsideTooltip, isPointer
 
 const FLIP_DURATION = 300;
 const GAP_EASE_MS = 70;
-const TOOLTIP_DELAY_MS = 600;
+const TOOLTIP_DELAY_MS = 0;
 const MIN_ARROW_PADDING = 18;
 const HOVER_EDGE_PX = 8;
 const STAGE_EDGE_MARGIN = 8;
@@ -882,31 +882,38 @@ export function applyRealtimeFrame(dockActor, cx, cy, isVertical, settings, now 
 
         if (appName) {
             if (dockActor._tooltipHoveredIndex !== closestIndex) {
-                clearTooltipDelay(dockActor);
-                if (dockActor._magTooltip) {
-                    dockActor._magTooltip.remove_all_transitions();
-                    dockActor._magTooltip.opacity = 0;
-                    dockActor._magTooltip.hide();
-                }
+                // Like macOS, a tooltip that is already showing swaps to the new icon in place.
+                const swapInPlace = dockActor._tooltipReady && dockActor._magTooltip && dockActor._magTooltip.visible;
                 dockActor._tooltipHoveredIndex = closestIndex;
                 dockActor._magTooltipAppId = null;
 
-                if (dockActor._tooltipDelayId && dockActor._magTimers) {
-                    dockActor._magTimers.remove(dockActor._tooltipDelayId);
+                if (swapInPlace) {
+                    if (dockActor._magPeekManager && dockActor._magPeekManager.stopPeek) dockActor._magPeekManager.stopPeek();
+                } else {
+                    clearTooltipDelay(dockActor);
+                    if (dockActor._magTooltip) {
+                        dockActor._magTooltip.remove_all_transitions();
+                        dockActor._magTooltip.opacity = 0;
+                        dockActor._magTooltip.hide();
+                    }
+
+                    if (dockActor._tooltipDelayId && dockActor._magTimers) {
+                        dockActor._magTimers.remove(dockActor._tooltipDelayId);
+                    }
+
+                    const showTooltip = () => {
+                        dockActor._tooltipDelayId = null;
+                        dockActor._tooltipReady = true;
+                        const ptrCoords = global.get_pointer();
+                        const pcx = ptrCoords[0];
+                        const pcy = ptrCoords[1];
+                        applyRealtimeFrame(dockActor, pcx, pcy, isVertical, settings, Date.now());
+                        return GLib.SOURCE_REMOVE;
+                    };
+
+                    if (!dockActor._magTimers) dockActor._magTimers = new TimeoutTracker();
+                    dockActor._tooltipDelayId = dockActor._magTimers.addTimeout(GLib.PRIORITY_DEFAULT, TOOLTIP_DELAY_MS, showTooltip);
                 }
-
-                const showTooltip = () => {
-                    dockActor._tooltipDelayId = null;
-                    dockActor._tooltipReady = true;
-                    const ptrCoords = global.get_pointer();
-                    const pcx = ptrCoords[0];
-                    const pcy = ptrCoords[1];
-                    applyRealtimeFrame(dockActor, pcx, pcy, isVertical, settings, Date.now());
-                    return GLib.SOURCE_REMOVE;
-                };
-
-                if (!dockActor._magTimers) dockActor._magTimers = new TimeoutTracker();
-                dockActor._tooltipDelayId = dockActor._magTimers.addTimeout(GLib.PRIORITY_DEFAULT, TOOLTIP_DELAY_MS, showTooltip);
             }
 
             if (!dockActor._magTooltip) {
@@ -1016,7 +1023,7 @@ export function applyRealtimeFrame(dockActor, cx, cy, isVertical, settings, now 
                 dockActor._magTooltip.remove_all_transitions();
                 dockActor._magTooltip.ease({
                     opacity: 255,
-                    duration: 220,
+                    duration: 100,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
                 resumeTooltipTracking(dockActor);

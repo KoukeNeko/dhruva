@@ -22,11 +22,11 @@ import Clutter from 'gi://Clutter';
 import { Settings } from '../../core/SettingsManager.js';
 
 
-const HIDE_ANIMATION_MS = 180;
+const HIDE_ANIMATION_MS = 100;
 const DEFAULT_TOOLTIP_PADDING = 20;
 const ICON_REACH_PX = 4;
 
-export const TOOLTIP_GAP = 8;
+export const TOOLTIP_GAP = 2;
 
 export function clearTooltipDelay(dockActor) {
     if (!dockActor) return;
