@@ -26,6 +26,7 @@ import { getOverviewStateAdjustment } from '../../core/Compat.js';
 import { TimeoutTracker } from '../../core/TimeoutTracker.js';
 import { setBoxVertical, isActorAlive } from '../../core/Utils.js';
 import { applyOverviewDockMargin, clearOverviewDockMargin } from './OverviewMargin.js';
+import { extendWorkspaceWallpaper, restoreWorkspaceWallpaper } from './WorkspaceWallpaperReach.js';
 
 
 const OVERVIEW_FADE_OUT_MS = 120;
@@ -79,6 +80,8 @@ export default class DockOverviewController {
 
     bind() {
         this.syncDashVisibility();
+        extendWorkspaceWallpaper();
+        this._extendsWallpaper = true;
 
         Main.overview.connectObject(
             'showing', () => this._onShowing(),
@@ -349,6 +352,8 @@ export default class DockOverviewController {
         if (adjustment) adjustment.disconnectObject(this);
         if (isActorAlive(this.dockUI.bgActor)) this.dockUI.bgActor.disconnectObject(this);
         this.dockUI.settings.disconnectObject(this);
+
+        if (this._extendsWallpaper) restoreWorkspaceWallpaper();
 
         this.timers.destroy();
         this._releaseStrutHolder();
