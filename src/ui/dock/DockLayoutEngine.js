@@ -558,7 +558,8 @@ export function updateLayout(dockUI) {
     if (!isFullWidth && dockUI.bgActor._isMagResetting) {
         _settleBackgroundAfterReset(dockUI, bgX, bgY, bgW, bgH);
     } else if (!dockUI.actor._isZoomActive || isFullWidth) {
-        dockUI.bgActor.remove_all_transitions();
+        // Only the geometry: the overview fades the background's opacity across layouts.
+        for (const property of ['x', 'y', 'width', 'height']) dockUI.bgActor.remove_transition(property);
         dockUI.bgActor.set_position(bgX, bgY);
         dockUI.bgActor.set_size(bgW, bgH);
     }
