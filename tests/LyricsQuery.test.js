@@ -48,6 +48,17 @@ test('lyricsQueries: an artist written differently from the channel is still tri
     assertDeepEqual(queries[1], { title: 'Thought Crime', artist: 'Yorushika' });
 });
 
+test('lyricsQueries: a title led by the artist is never looked up by the artist\'s name', () => {
+    assertDeepEqual(lyricsQueries('Kenshi Yonezu - Live from 2019 TOUR / When The Spine Becomes Opal', 'Kenshi Yonezu 米津玄師'),
+        [{ title: 'Live from 2019 TOUR / When The Spine Becomes Opal', artist: 'Kenshi Yonezu' }]);
+});
+
+test('titlesMatch: a short track name inside a long video title is not a match', () => {
+    assertFalse(titlesMatch('Lemon', 'Live from 2019 TOUR / When The Spine Becomes Opal'));
+    assertFalse(titlesMatch('Opal', 'When The Spine Becomes Opal'));
+    assertTrue(titlesMatch('レプリカント [Live]', 'レプリカント'));
+});
+
 test('titlesMatch: rejects another song by the same artist', () => {
     assertTrue(titlesMatch('レプリカント', 'レプリカント'));
     assertTrue(titlesMatch('Heroes (2017 Remaster)', 'heroes'));

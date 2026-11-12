@@ -25,7 +25,8 @@ const UUID = 'dhruva@narkagni';
 const USER_DIRS = ['icon', 'folder_icons', 'blur_bg'];
 const PATH_KEYS = ['custom-grid-icon', 'blur-custom-photo', 'custom-folders', 'app-folders'];
 const LEGACY_CACHE_NAME = 'dhruva-music-art';
-const LYRICS_FILE = 'lyrics_cache.json';
+// v2: entries cached before lookups checked the track name and length are not trusted.
+const LYRICS_FILE = 'lyrics_cache_v2.json';
 
 export function userDataDir(name) {
     return GLib.build_filenamev([GLib.get_user_data_dir(), UUID, name]);

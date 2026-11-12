@@ -156,11 +156,13 @@ export class LyricsClient {
         // A search also returns the artist's other songs; their lyrics would be shown out of time.
         const sameTrack = list.filter(item => titlesMatch(item.trackName, title));
         const isSameLength = item => durationSec <= 0 || Math.abs(item.duration - durationSec) < DURATION_TOLERANCE_S;
-        return entryFrom(
-            sameTrack.find(item => item.syncedLyrics && isSameLength(item)) ||
-            sameTrack.find(item => item.syncedLyrics) ||
-            sameTrack.find(item => item.plainLyrics && isSameLength(item)) ||
-            sameTrack.find(item => item.plainLyrics));
+        const timed = sameTrack.find(item => item.syncedLyrics && isSameLength(item));
+        if (timed) return entryFrom(timed);
+
+        // Another recording of the song, such as the studio version of a live video:
+        // the words are right but its timestamps are not, so only the words are kept.
+        const words = sameTrack.find(item => item.plainLyrics);
+        return entryFrom(words && { plainLyrics: words.plainLyrics });
     }
 
     setOffset(title, artist, offsetMs) {

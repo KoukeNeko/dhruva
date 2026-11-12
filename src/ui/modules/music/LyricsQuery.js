@@ -53,8 +53,10 @@ export function lyricsQueries(title, artist) {
     if (tail) {
         const asVideo = { title: tail, artist: head };
         const asTrack = { title: head, artist: reported };
+        // A title led by the artist's own name is never "Song - Suffix"; reading it
+        // that way would look the artist's name up as the song.
         const headIsArtist = normalize(reported).includes(normalize(head));
-        queries.push(...(headIsArtist ? [asVideo, asTrack] : [asTrack, asVideo]));
+        queries.push(...(headIsArtist ? [asVideo] : [asTrack, asVideo]));
     } else {
         queries.push({ title: stripped, artist: reported });
     }
@@ -64,9 +66,11 @@ export function lyricsQueries(title, artist) {
 
 /** Whether a search result is the track that was asked for, not just one by the same artist. */
 export function titlesMatch(found, wanted) {
-    const a = normalize(found);
+    // "Heroes (2017 Remaster)" is "Heroes"; a short name found somewhere inside a
+    // long video title is not that video's song.
+    const a = normalize((found || '').replace(PARENS_RE, ' ').replace(BRACKETS_RE, ' '));
     const b = normalize(wanted);
-    return a.length > 0 && b.length > 0 && (a.includes(b) || b.includes(a));
+    return a.length > 0 && b.length > 0 && a.startsWith(b);
 }
 
 /** Per reported title, so that two videos of one channel never share lyrics. */
