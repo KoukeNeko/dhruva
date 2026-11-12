@@ -30,6 +30,8 @@ import { applyOverviewDockMargin, clearOverviewDockMargin } from './OverviewMarg
 
 const OVERVIEW_FADE_OUT_MS = 120;
 const OVERVIEW_FADE_IN_MS = 180;
+// Matches the top bar, whose background is a 250 ms St CSS transition.
+const BACKGROUND_FADE_MS = 250;
 const STRUT_SETTLE_MS = 60;
 const FALLBACK_DOCK_HEIGHT = 400;
 
@@ -130,6 +132,8 @@ export default class DockOverviewController {
         const dockUI = this.dockUI;
         const actor = dockUI.actor;
 
+        if (Settings.transparentInOverview) this._fadeBackground(0);
+
         if (isActorAlive(actor)) {
             actor.remove_all_transitions();
             actor.translation_x = 0;
@@ -188,6 +192,7 @@ export default class DockOverviewController {
 
     _onHiding() {
         const actor = this.dockUI.actor;
+        this._fadeBackground(255);
         if (this.originalPosition) {
             if (isActorAlive(actor)) this._fadeOut();
         } else if (!this.hidesGnomeDash() && isActorAlive(actor)) {
@@ -244,6 +249,20 @@ export default class DockOverviewController {
             duration: OVERVIEW_FADE_OUT_MS,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
+    }
+
+    // The blur sits beside the dock, not inside it, so it fades on its own.
+    _fadeBackground(opacity) {
+        const blurActor = this.dockUI.dockBlur ? this.dockUI.dockBlur.blurActor : null;
+        for (const target of [this.dockUI.bgActor, blurActor]) {
+            if (!isActorAlive(target)) continue;
+            target.ease({
+                opacity,
+                duration: BACKGROUND_FADE_MS,
+                // St CSS transitions, the top bar's included, use this curve.
+                mode: Clutter.AnimationMode.EASE_IN_OUT_QUAD,
+            });
+        }
     }
 
     _leavePosition() {

@@ -287,6 +287,10 @@ export function buildAppearancePage(window, settings) {
     }));
     showWhen(glassNote, settings, ['blur-enabled'], isBlur);
 
+    const overviewGroup = addGroup(page, _('Overview'));
+    addSwitchRow(overviewGroup, settings, 'transparent-in-overview', _('Transparent Background'),
+        _('Fade the background out in the overview and app grid, like the top bar'));
+
     const shapeGroup = addGroup(page, _('Shape'));
     addGroupReset(shapeGroup, settings, SHAPE_KEYS);
     addSliderRow(shapeGroup, settings, 'border-radius', _('Corner Radius'), null, { lower: 0, upper: 50, step: 1 }, fmt.px);

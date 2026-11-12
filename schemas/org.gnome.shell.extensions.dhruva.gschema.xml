@@ -46,6 +46,12 @@
       <description>Display the custom dock when the GNOME overview is active.</description>
     </key>
 
+    <key name="transparent-in-overview" type="b">
+      <default>false</default>
+      <summary>Transparent in Overview</summary>
+      <description>Fade the dock background out in the overview and app grid, like the top bar.</description>
+    </key>
+
     <key name="full-width" type="b">
       <default>false</default>
       <summary>Full Width Dock</summary>
