@@ -26,7 +26,7 @@ const HIDE_ANIMATION_MS = 180;
 const DEFAULT_TOOLTIP_PADDING = 20;
 const ICON_REACH_PX = 4;
 
-export const TOOLTIP_GAP = 24;
+export const TOOLTIP_GAP = 8;
 
 export function clearTooltipDelay(dockActor) {
     if (!dockActor) return;
