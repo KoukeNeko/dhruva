@@ -46,6 +46,12 @@
       <description>Display the custom dock when the GNOME overview is active.</description>
     </key>
 
+    <key name="transparent-background" type="b">
+      <default>false</default>
+      <summary>Transparent Background</summary>
+      <description>Draw no background behind the dock.</description>
+    </key>
+
     <key name="transparent-in-overview" type="b">
       <default>false</default>
       <summary>Transparent in Overview</summary>

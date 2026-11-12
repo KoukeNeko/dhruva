@@ -64,6 +64,7 @@ const KEYS = {
     isolateMonitors: [BOOLEAN, 'isolate-monitors'],
     independentDock: [BOOLEAN, 'independent-dock'],
     showIndependentInOverview: [BOOLEAN, 'show-independent-in-overview'],
+    transparentBackground: [BOOLEAN, 'transparent-background'],
     transparentInOverview: [BOOLEAN, 'transparent-in-overview'],
     fullWidth: [BOOLEAN, 'full-width'],
     hybridPanelMode: [BOOLEAN, 'hybrid-panel-mode'],

@@ -104,6 +104,7 @@ class DockPreview {
 
     _paintBackground(cr, x, y, w, h, r, isBar) {
         const s = this._settings;
+        if (s.get_boolean('transparent-background')) return;
         roundedRect(cr, x, y, w, h, r);
 
         if (s.get_boolean('blur-enabled')) {
@@ -248,6 +249,9 @@ export function buildAppearancePage(window, settings) {
     const heroGroup = addGroup(page, _('Your Dock'), _('Changes show up here as you make them'));
     heroGroup.add(preview.widget);
 
+    const isTransparent = () => settings.get_boolean('transparent-background');
+    addSwitchRow(addGroup(page), settings, 'transparent-background', _('Transparent'), _('No background behind the dock'));
+
     const themeGroup = addGroup(page, _('Background'));
     addGroupReset(themeGroup, settings, ['dock-theme', ...BACKGROUND_KEYS]);
     addComboRow(themeGroup, settings, 'dock-theme', _('Theme'), _('A ready palette, or your own colours'), THEMES());
@@ -278,18 +282,19 @@ export function buildAppearancePage(window, settings) {
     showWhen(gradientRow, settings, ['dock-theme'], isCustom);
     showWhen(secondColorRow, settings, ['dock-theme', 'use-gradient'], useGradient);
     showWhen(directionRow, settings, ['dock-theme', 'use-gradient'], useGradient);
-    showWhen(themeGroup, settings, ['blur-enabled'], () => !isBlur());
+    showWhen(themeGroup, settings, ['blur-enabled', 'transparent-background'], () => !isBlur() && !isTransparent());
 
     const glassNote = addGroup(page, _('Background'));
     glassNote.add(new Adw.ActionRow({
         title: _('Blur is on'),
         subtitle: _('The dock is made of glass now. Its look is set on the Blur page'),
     }));
-    showWhen(glassNote, settings, ['blur-enabled'], isBlur);
+    showWhen(glassNote, settings, ['blur-enabled', 'transparent-background'], () => isBlur() && !isTransparent());
 
     const overviewGroup = addGroup(page, _('Overview'));
     addSwitchRow(overviewGroup, settings, 'transparent-in-overview', _('Transparent Background'),
         _('Fade the background out in the overview and app grid, like the top bar'));
+    showWhen(overviewGroup, settings, ['transparent-background'], () => !isTransparent());
 
     const shapeGroup = addGroup(page, _('Shape'));
     addGroupReset(shapeGroup, settings, SHAPE_KEYS);
@@ -361,7 +366,7 @@ export function buildAppearancePage(window, settings) {
         () => settings.get_boolean('hybrid-panel-mode') && settings.get_boolean('dynamic-panel'));
 
     const previewKeys = [
-        'blur-enabled', 'full-width', 'hybrid-panel-mode', 'dynamic-panel', 'dock-theme', ...BACKGROUND_KEYS, ...SHAPE_KEYS,
+        'blur-enabled', 'transparent-background', 'full-width', 'hybrid-panel-mode', 'dynamic-panel', 'dock-theme', ...BACKGROUND_KEYS, ...SHAPE_KEYS,
         ...INDICATOR_KEYS, ...BADGE_KEYS, 'show-running-indicators', 'show-notification-badges',
         'show-app-separator', 'running-separator-width', 'running-separator-height', 'running-separator-color',
         'running-separator-opacity', 'show-module-separator', 'separator-width', 'separator-height',

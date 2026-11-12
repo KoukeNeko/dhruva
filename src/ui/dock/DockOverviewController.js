@@ -88,7 +88,9 @@ export default class DockOverviewController {
             this
         );
 
-        this.dockUI.bgActor.connectObject('notify::opacity', () => this._syncBackdropOpacity(), this);
+        this.dockUI.bgActor.connectObject('notify::opacity', () => this._syncGlassOpacity(), this);
+        this.dockUI.settings.connectObject('changed::transparent-background', () => this._restoreBackground(), this);
+        this._restoreBackground();
 
         const adjustment = getOverviewStateAdjustment();
         if (adjustment) adjustment.connectObject('notify::value', () => this._onStateChanged(), this);
@@ -135,7 +137,7 @@ export default class DockOverviewController {
         const dockUI = this.dockUI;
         const actor = dockUI.actor;
 
-        if (Settings.transparentInOverview) this._fadeBackground(0);
+        if (Settings.transparentInOverview) this._fadeBackground(false);
 
         if (isActorAlive(actor)) {
             actor.remove_all_transitions();
@@ -195,7 +197,7 @@ export default class DockOverviewController {
 
     _onHiding() {
         const actor = this.dockUI.actor;
-        this._fadeBackground(255);
+        this._fadeBackground(true);
         if (this.originalPosition) {
             if (isActorAlive(actor)) this._fadeOut();
         } else if (!this.hidesGnomeDash() && isActorAlive(actor)) {
@@ -254,16 +256,28 @@ export default class DockOverviewController {
         });
     }
 
-    _fadeBackground(opacity) {
-        const actor = this.dockUI.actor;
-        if (!isActorAlive(actor)) return;
+    _restoreBackground() {
+        this._fadeBackground(!isOverviewOpen() || !Settings.transparentInOverview);
+    }
+
+    // The background never shows in transparent mode. The show-desktop button
+    // is a control rather than background, so it only leaves with the overview.
+    _fadeBackground(isShown) {
+        const dockUI = this.dockUI;
+        if (!isActorAlive(dockUI.actor)) return;
 
         // Blur my Shell puts its own blur inside the dock, so it has to fade too.
         // It keeps resetting its group's opacity, so fade what the group holds.
-        const foreignBlurs = actor.get_children()
+        const foreignBlurs = dockUI.actor.get_children()
             .filter(child => child.name === BLUR_MY_SHELL_GROUP)
             .flatMap(group => group.get_children());
-        for (const target of [this.dockUI.bgActor, ...foreignBlurs]) {
+        const backgroundOpacity = isShown && !Settings.transparentBackground ? 255 : 0;
+        const targets = [
+            [dockUI.extractedDesktop, isShown ? 255 : 0],
+            ...[dockUI.bgActor, ...foreignBlurs].map(target => [target, backgroundOpacity]),
+        ];
+
+        for (const [target, opacity] of targets) {
             if (!isActorAlive(target)) continue;
             target.ease({
                 opacity,
@@ -274,15 +288,11 @@ export default class DockOverviewController {
         }
     }
 
-    // The glass sits beside the dock and is hidden while the background is
-    // near zero, and the show-desktop button is laid out apart from it, so
-    // both copy the background's opacity instead of easing on their own.
-    _syncBackdropOpacity() {
-        const dockUI = this.dockUI;
-        const blurActor = dockUI.dockBlur ? dockUI.dockBlur.blurActor : null;
-        for (const follower of [blurActor, dockUI.extractedDesktop]) {
-            if (isActorAlive(follower)) follower.opacity = dockUI.bgActor.opacity;
-        }
+    // The glass sits beside the dock, not inside it, and is hidden while the
+    // background is near zero, so it copies the opacity instead of easing.
+    _syncGlassOpacity() {
+        const blurActor = this.dockUI.dockBlur ? this.dockUI.dockBlur.blurActor : null;
+        if (isActorAlive(blurActor)) blurActor.opacity = this.dockUI.bgActor.opacity;
     }
 
     _leavePosition() {
@@ -338,6 +348,7 @@ export default class DockOverviewController {
         const adjustment = getOverviewStateAdjustment();
         if (adjustment) adjustment.disconnectObject(this);
         if (isActorAlive(this.dockUI.bgActor)) this.dockUI.bgActor.disconnectObject(this);
+        this.dockUI.settings.disconnectObject(this);
 
         this.timers.destroy();
         this._releaseStrutHolder();
