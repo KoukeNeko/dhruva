@@ -18,7 +18,6 @@
 
 
 
-import Graphene from 'gi://Graphene';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { WorkspaceBackground } from 'resource:///org/gnome/shell/ui/workspace.js';
 import { SecondaryMonitorDisplay, WorkspacesDisplay } from 'resource:///org/gnome/shell/ui/workspacesView.js';
@@ -65,31 +64,32 @@ function syncBoxClip(background) {
         return;
     }
 
+    const workarea = Main.layoutManager.getWorkAreaForMonitor(background._monitorIndex);
     const { width, height } = box;
     box.clip_to_allocation = false;
-    box.set_clip(0, 0, width, height + reach * height / background._workarea.height);
+    box.set_clip(0, 0, width, height + reach * height / workarea.height);
 }
 
+// The work area a workspace background keeps is only read to place its clip,
+// here and by extensions that clip a layer of their own over the wallpaper
+// (a live wallpaper, for one). Stretching it moves every such clip together,
+// where moving only GNOME's would leave the other layer ending at the dock.
 function updateRoundedClipBounds(original) {
     return function () {
-        if (bottomReach(this._monitorIndex) === 0) {
-            original.call(this);
-            syncBoxClip(this);
-            return;
+        const workarea = Main.layoutManager.getWorkAreaForMonitor(this._monitorIndex);
+        if (bottomReach(this._monitorIndex) > 0) {
+            if (!this._dhruvaBoxClipId) this._dhruvaBoxClipId = this._bin.connect('notify::allocation', () => syncBoxClip(this));
+            this._workarea = {
+                x: workarea.x,
+                y: workarea.y,
+                width: workarea.width,
+                height: workarea.height + currentReach(this),
+            };
+        } else {
+            this._workarea = workarea;
         }
 
-        if (!this._dhruvaBoxClipId)
-            this._dhruvaBoxClipId = this._bin.connect('notify::allocation', () => syncBoxClip(this));
-
-        // The corners round at the bounds, so they move down with the reach.
-        const monitor = Main.layoutManager.monitors[this._monitorIndex];
-        const workarea = this._workarea;
-        const rect = new Graphene.Rect();
-        rect.origin.x = workarea.x - monitor.x;
-        rect.origin.y = workarea.y - monitor.y;
-        rect.size.width = workarea.width;
-        rect.size.height = workarea.height + currentReach(this);
-        this._bgManager.backgroundActor.content.set_rounded_clip_bounds(rect);
+        original.call(this);
         syncBoxClip(this);
     };
 }
