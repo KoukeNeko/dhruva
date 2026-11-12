@@ -138,6 +138,13 @@ export function debounce(func, wait) {
     return wrapper;
 }
 
+const GEOMETRY_TRANSITIONS = ['x', 'y', 'width', 'height', 'scale-x', 'scale-y', 'translation-x', 'translation-y'];
+
+// Leaves opacity running, so the overview's background fade survives relayouts.
+export function removeGeometryTransitions(actor) {
+    for (const name of GEOMETRY_TRANSITIONS) actor.remove_transition(name);
+}
+
 export function setBoxVertical(box, isVertical) {
     if (!box) return;
     if (box.set_orientation) {

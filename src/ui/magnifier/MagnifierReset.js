@@ -20,7 +20,7 @@
 import GLib from 'gi://GLib';
 import Clutter from 'gi://Clutter';
 
-import { isActorAlive } from '../../core/Utils.js';
+import { isActorAlive, removeGeometryTransitions } from '../../core/Utils.js';
 import { getDockButtons } from './MagnifierMath.js';
 import { isFullBarLayout } from '../../core/LayoutMode.js';
 import { TimeoutTracker } from '../../core/TimeoutTracker.js';
@@ -138,7 +138,7 @@ export function resetMagnification(dockActor, duration = 200, lockEngine = false
     const isFullBar = isFullBarLayout();
 
     if (isActorAlive(dockActor.bgActor) && !isFullBar) {
-        dockActor.bgActor.remove_all_transitions();
+        removeGeometryTransitions(dockActor.bgActor);
         dockActor.bgActor.scale_x = 1.0;
         dockActor.bgActor.scale_y = 1.0;
         dockActor.bgActor.translation_x = 0;
@@ -178,7 +178,7 @@ export function resetMagnification(dockActor, duration = 200, lockEngine = false
             dockActor.bgActor._isMagResetting = true;
         }
     } else if (isActorAlive(dockActor.bgActor) && isFullBar) {
-        dockActor.bgActor.remove_all_transitions();
+        removeGeometryTransitions(dockActor.bgActor);
         dockActor.bgActor.scale_x = 1.0;
         dockActor.bgActor.scale_y = 1.0;
         dockActor.bgActor.translation_x = 0;

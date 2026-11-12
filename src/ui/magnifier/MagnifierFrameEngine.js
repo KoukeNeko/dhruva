@@ -22,7 +22,7 @@ import Clutter from 'gi://Clutter';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
-import { isActorAlive } from '../../core/Utils.js';
+import { isActorAlive, removeGeometryTransitions } from '../../core/Utils.js';
 import PeekManager from '../../core/PeekManager.js';
 import { Settings } from '../../core/SettingsManager.js';
 import { FrameTicker } from '../../core/FrameTicker.js';
@@ -758,7 +758,7 @@ export function applyRealtimeFrame(dockActor, cx, cy, isVertical, settings, now 
         if (leftExp > 0 || rightExp > 0 || topExp > 0 || botExp > 0) {
             const BUFFER = isDynamicPanel ? 0 : DOCK_BG_BUFFER;
 
-            dockActor.bgActor.remove_all_transitions();
+            removeGeometryTransitions(dockActor.bgActor);
             dockActor.bgActor.scale_x = 1.0;
             dockActor.bgActor.scale_y = 1.0;
             dockActor.bgActor.translation_x = 0;
@@ -811,7 +811,7 @@ export function applyRealtimeFrame(dockActor, cx, cy, isVertical, settings, now 
             Math.abs(dockActor.bgActor.x - baseX) > 0.5 ||
             Math.abs(dockActor.bgActor.y - baseY) > 0.5
         ) {
-            dockActor.bgActor.remove_all_transitions();
+            removeGeometryTransitions(dockActor.bgActor);
             dockActor.bgActor.scale_x = 1.0;
             dockActor.bgActor.scale_y = 1.0;
             dockActor.bgActor.translation_x = 0;

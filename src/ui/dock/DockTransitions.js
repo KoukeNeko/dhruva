@@ -22,7 +22,7 @@ import Clutter from 'gi://Clutter';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { Settings } from '../../core/SettingsManager.js';
-import { isActorAlive, markActorDisposed } from '../../core/Utils.js';
+import { isActorAlive, markActorDisposed, removeGeometryTransitions } from '../../core/Utils.js';
 import { setEdgePivot } from './DockButtonBase.js';
 import { isPointerWithinDockBounds } from '../magnifier/MagnifierMath.js';
 import { queueMagnifierMotion } from '../magnifier/MagnifierFrameEngine.js';
@@ -284,7 +284,7 @@ function playBackgroundResize(dockUI, oldRect, shiftX, shiftY) {
     const hasChanged = Object.keys(to).some(prop => Math.abs(to[prop] - from[prop]) >= MIN_MOVE_PX);
     if (!hasChanged) return false;
 
-    bg.remove_all_transitions();
+    removeGeometryTransitions(bg);
     bg.set_position(from.x, from.y);
     bg.set_size(from.width, from.height);
     bg.ease({ ...to, duration: BG_RESIZE_MS, mode: Clutter.AnimationMode.EASE_OUT_CUBIC });

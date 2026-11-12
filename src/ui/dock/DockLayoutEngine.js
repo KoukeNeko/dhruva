@@ -23,7 +23,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 import { Settings } from '../../core/SettingsManager.js';
 import { isDynamicPanelLayout, isFullBarLayout, isPanelOrFullWidth } from '../../core/LayoutMode.js';
-import { isActorAlive, hexToRgba } from '../../core/Utils.js';
+import { isActorAlive, hexToRgba, removeGeometryTransitions } from '../../core/Utils.js';
 import { HYBRID_PANEL_CONFIG } from '../../core/PanelConfig.js';
 import { calculateScale, calculatePivot, calculateBackgroundBounds } from './DockGeometryCalculator.js';
 
@@ -558,8 +558,7 @@ export function updateLayout(dockUI) {
     if (!isFullWidth && dockUI.bgActor._isMagResetting) {
         _settleBackgroundAfterReset(dockUI, bgX, bgY, bgW, bgH);
     } else if (!dockUI.actor._isZoomActive || isFullWidth) {
-        // Only the geometry: the overview fades the background's opacity across layouts.
-        for (const property of ['x', 'y', 'width', 'height']) dockUI.bgActor.remove_transition(property);
+        removeGeometryTransitions(dockUI.bgActor);
         dockUI.bgActor.set_position(bgX, bgY);
         dockUI.bgActor.set_size(bgW, bgH);
     }

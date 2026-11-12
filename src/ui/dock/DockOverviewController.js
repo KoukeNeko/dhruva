@@ -32,6 +32,7 @@ const OVERVIEW_FADE_OUT_MS = 120;
 const OVERVIEW_FADE_IN_MS = 180;
 // Matches the top bar, whose background is a 250 ms St CSS transition.
 const BACKGROUND_FADE_MS = 250;
+const BLUR_MY_SHELL_GROUP = 'bms-dash-backgroundgroup';
 const STRUT_SETTLE_MS = 60;
 const FALLBACK_DOCK_HEIGHT = 400;
 
@@ -86,6 +87,8 @@ export default class DockOverviewController {
             'hidden', () => this._onHidden(),
             this
         );
+
+        this.dockUI.bgActor.connectObject('notify::opacity', () => this._syncGlassOpacity(), this);
 
         const adjustment = getOverviewStateAdjustment();
         if (adjustment) adjustment.connectObject('notify::value', () => this._onStateChanged(), this);
@@ -251,10 +254,16 @@ export default class DockOverviewController {
         });
     }
 
-    // The blur sits beside the dock, not inside it, so it fades on its own.
     _fadeBackground(opacity) {
-        const blurActor = this.dockUI.dockBlur ? this.dockUI.dockBlur.blurActor : null;
-        for (const target of [this.dockUI.bgActor, blurActor]) {
+        const actor = this.dockUI.actor;
+        if (!isActorAlive(actor)) return;
+
+        // Blur my Shell puts its own blur inside the dock, so it has to fade too.
+        // It keeps resetting its group's opacity, so fade what the group holds.
+        const foreignBlurs = actor.get_children()
+            .filter(child => child.name === BLUR_MY_SHELL_GROUP)
+            .flatMap(group => group.get_children());
+        for (const target of [this.dockUI.bgActor, ...foreignBlurs]) {
             if (!isActorAlive(target)) continue;
             target.ease({
                 opacity,
@@ -263,6 +272,13 @@ export default class DockOverviewController {
                 mode: Clutter.AnimationMode.EASE_IN_OUT_QUAD,
             });
         }
+    }
+
+    // The glass sits beside the dock, not inside it, and is hidden while the
+    // background is near zero, so it copies the opacity instead of easing.
+    _syncGlassOpacity() {
+        const blurActor = this.dockUI.dockBlur ? this.dockUI.dockBlur.blurActor : null;
+        if (isActorAlive(blurActor)) blurActor.opacity = this.dockUI.bgActor.opacity;
     }
 
     _leavePosition() {
@@ -317,6 +333,7 @@ export default class DockOverviewController {
         Main.overview.disconnectObject(this);
         const adjustment = getOverviewStateAdjustment();
         if (adjustment) adjustment.disconnectObject(this);
+        if (isActorAlive(this.dockUI.bgActor)) this.dockUI.bgActor.disconnectObject(this);
 
         this.timers.destroy();
         this._releaseStrutHolder();
