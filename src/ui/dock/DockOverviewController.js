@@ -88,7 +88,7 @@ export default class DockOverviewController {
             this
         );
 
-        this.dockUI.bgActor.connectObject('notify::opacity', () => this._syncGlassOpacity(), this);
+        this.dockUI.bgActor.connectObject('notify::opacity', () => this._syncBackdropOpacity(), this);
 
         const adjustment = getOverviewStateAdjustment();
         if (adjustment) adjustment.connectObject('notify::value', () => this._onStateChanged(), this);
@@ -274,11 +274,15 @@ export default class DockOverviewController {
         }
     }
 
-    // The glass sits beside the dock, not inside it, and is hidden while the
-    // background is near zero, so it copies the opacity instead of easing.
-    _syncGlassOpacity() {
-        const blurActor = this.dockUI.dockBlur ? this.dockUI.dockBlur.blurActor : null;
-        if (isActorAlive(blurActor)) blurActor.opacity = this.dockUI.bgActor.opacity;
+    // The glass sits beside the dock and is hidden while the background is
+    // near zero, and the show-desktop button is laid out apart from it, so
+    // both copy the background's opacity instead of easing on their own.
+    _syncBackdropOpacity() {
+        const dockUI = this.dockUI;
+        const blurActor = dockUI.dockBlur ? dockUI.dockBlur.blurActor : null;
+        for (const follower of [blurActor, dockUI.extractedDesktop]) {
+            if (isActorAlive(follower)) follower.opacity = dockUI.bgActor.opacity;
+        }
     }
 
     _leavePosition() {

@@ -306,7 +306,6 @@ export function updateLayout(dockUI) {
 
     if (isPanelOrFull && showDesktopBtn && dockUI.extractedDesktop && isActorAlive(dockUI.extractedDesktop)) {
         dockUI.extractedDesktop.show();
-        dockUI.extractedDesktop.opacity = 255;
 
         const deskInset = (!isFullWidth && !Settings.blurEnabled) ? sWidth : 0;
         const rawRadius = isFullWidth ? 0 : Settings.borderRadius;
