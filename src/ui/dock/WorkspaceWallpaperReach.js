@@ -35,7 +35,7 @@ let injections = null;
 let users = 0;
 
 function hasSeeThroughBottomDock() {
-    return (Settings.transparentBackground || Settings.transparentInOverview) &&
+    return (Settings.transparentBackground || Settings.transparentInOverview || Settings.blurEnabled) &&
         (Settings.dockPosition || 'BOTTOM') === 'BOTTOM';
 }
 
