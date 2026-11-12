@@ -17,7 +17,6 @@
 */
 
 
-import GLib from 'gi://GLib';
 import Clutter from 'gi://Clutter';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -27,7 +26,6 @@ import PeekManager from '../../core/PeekManager.js';
 import { Settings } from '../../core/SettingsManager.js';
 import { FrameTicker } from '../../core/FrameTicker.js';
 import { resetMagnification } from './MagnifierReset.js';
-import { TimeoutTracker } from '../../core/TimeoutTracker.js';
 import { isContextMenuOpen, isStartMenuOpen } from './MagnifierState.js';
 import { isDynamicPanelLayout, isFullBarLayout } from '../../core/LayoutMode.js';
 import { setEdgePivot, counterScaleIndicator, setCrispIconHiRes } from '../dock/DockButtonBase.js';
@@ -38,7 +36,6 @@ import { TOOLTIP_GAP, clearTooltipDelay, hideTooltip, isInsideTooltip, isPointer
 
 const FLIP_DURATION = 300;
 const GAP_EASE_MS = 70;
-const TOOLTIP_DELAY_MS = 0;
 const MIN_ARROW_PADDING = 18;
 const HOVER_EDGE_PX = 8;
 const STAGE_EDGE_MARGIN = 8;
@@ -897,22 +894,7 @@ export function applyRealtimeFrame(dockActor, cx, cy, isVertical, settings, now 
                         dockActor._magTooltip.hide();
                     }
 
-                    if (dockActor._tooltipDelayId && dockActor._magTimers) {
-                        dockActor._magTimers.remove(dockActor._tooltipDelayId);
-                    }
-
-                    const showTooltip = () => {
-                        dockActor._tooltipDelayId = null;
-                        dockActor._tooltipReady = true;
-                        const ptrCoords = global.get_pointer();
-                        const pcx = ptrCoords[0];
-                        const pcy = ptrCoords[1];
-                        applyRealtimeFrame(dockActor, pcx, pcy, isVertical, settings, Date.now());
-                        return GLib.SOURCE_REMOVE;
-                    };
-
-                    if (!dockActor._magTimers) dockActor._magTimers = new TimeoutTracker();
-                    dockActor._tooltipDelayId = dockActor._magTimers.addTimeout(GLib.PRIORITY_DEFAULT, TOOLTIP_DELAY_MS, showTooltip);
+                    dockActor._tooltipReady = true;
                 }
             }
 
