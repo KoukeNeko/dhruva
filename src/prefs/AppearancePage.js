@@ -250,7 +250,10 @@ export function buildAppearancePage(window, settings) {
     heroGroup.add(preview.widget);
 
     const isTransparent = () => settings.get_boolean('transparent-background');
-    addSwitchRow(addGroup(page), settings, 'transparent-background', _('Transparent'), _('No background behind the dock'));
+    const transparencyGroup = addGroup(page);
+    addSwitchRow(transparencyGroup, settings, 'transparent-background', _('Transparent'), _('No background behind the dock'));
+    const topBarRow = addSwitchRow(transparencyGroup, settings, 'transparent-top-bar', _('Transparent Top Bar'), _('No background behind the top bar'));
+    showWhen(topBarRow, settings, ['hybrid-panel-mode'], () => !settings.get_boolean('hybrid-panel-mode'));
 
     const themeGroup = addGroup(page, _('Background'));
     addGroupReset(themeGroup, settings, ['dock-theme', ...BACKGROUND_KEYS]);

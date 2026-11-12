@@ -36,6 +36,8 @@ const SHORTCUT_KEY = 'toggle-independent-dock-shortcut';
 const MONITORS_SETTLE_MS = 500;
 
 const RELOAD_KEYS = ['dock-position', 'independent-dock', 'full-width', 'hybrid-panel-mode', 'start-menu'];
+const TRANSPARENT_TOP_BAR_KEY = 'transparent-top-bar';
+const TRANSPARENT_TOP_BAR_CLASS = 'dhruva-transparent-top-bar';
 
 export default class DhruvaExtension extends Extension {
     enable() {
@@ -64,10 +66,17 @@ export default class DhruvaExtension extends Extension {
         for (const key of RELOAD_KEYS)
             this._settings.connectObject(`changed::${key}`, () => this._monitorController.reloadDocks(), this);
         this._settings.connectObject(`changed::${SHORTCUT_KEY}`, () => this._syncShortcut(), this);
+        this._settings.connectObject(`changed::${TRANSPARENT_TOP_BAR_KEY}`, () => this._syncTopBar(), this);
 
         this._syncShortcut();
+        this._syncTopBar();
         this._monitorController.reloadDocks();
         this._quickLaunchManager = new QuickLaunchManager(this._settings, () => this._monitorController.getQuickLaunchDock());
+    }
+
+    _syncTopBar() {
+        if (this._settings.get_boolean(TRANSPARENT_TOP_BAR_KEY)) Main.panel.add_style_class_name(TRANSPARENT_TOP_BAR_CLASS);
+        else Main.panel.remove_style_class_name(TRANSPARENT_TOP_BAR_CLASS);
     }
 
     _syncShortcut() {
@@ -91,6 +100,7 @@ export default class DhruvaExtension extends Extension {
 
         Main.layoutManager.disconnectObject(this);
         this._settings.disconnectObject(this);
+        Main.panel.remove_style_class_name(TRANSPARENT_TOP_BAR_CLASS);
         this._timers.destroy();
         this._timers = null;
 

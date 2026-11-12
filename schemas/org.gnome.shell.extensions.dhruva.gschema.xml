@@ -52,6 +52,12 @@
       <description>Draw no background behind the dock.</description>
     </key>
 
+    <key name="transparent-top-bar" type="b">
+      <default>false</default>
+      <summary>Transparent Top Bar</summary>
+      <description>Draw no background behind the top bar.</description>
+    </key>
+
     <key name="transparent-in-overview" type="b">
       <default>false</default>
       <summary>Transparent in Overview</summary>
