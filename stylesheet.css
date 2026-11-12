@@ -210,7 +210,8 @@
     background-color: rgba(20, 20, 24, 0.94);
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 22px;
-    padding: 0 8px;
+    /* The 32px art sits (44 - 32) / 2 = 6px from the top and bottom; the same on the left. */
+    padding: 0 8px 0 6px;
     height: 44px;
 }
 
