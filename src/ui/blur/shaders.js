@@ -172,5 +172,7 @@ export const BLUR_CODE = `
     float dither = fract(sin(dot(px, vec2(12.9898, 78.233))) * 43758.5453);
     base += vec3((dither - 0.5) / 255.0);
 
-    cogl_color_out = vec4(base, 1.0) * mask;
+    // Only this outer pass paints with the actor's opacity, which Clutter
+    // passes in premultiplied; without it the glass ignores fades.
+    cogl_color_out = vec4(base, 1.0) * mask * cogl_color_in.a;
 `;
