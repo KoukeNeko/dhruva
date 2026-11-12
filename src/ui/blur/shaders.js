@@ -166,8 +166,11 @@ export const BLUR_CODE = `
         base += vec3(1.0) * (edgeLine * 2.2 * rimIntensity);
     }
 
+    // The rim shading belongs to the highlight: it reaches full strength at
+    // the default glow and goes away with it, leaving a flush bar unlined.
     float edgeDamp = max(smoothstep(0.0, -2.0, sd), arrowZone);
-    base *= mix(0.85, 1.0, edgeDamp);
+    float rimShade = 0.15 * clamp(u_border_glow / 0.2, 0.0, 1.0);
+    base *= mix(1.0 - rimShade, 1.0, edgeDamp);
 
     float dither = fract(sin(dot(px, vec2(12.9898, 78.233))) * 43758.5453);
     base += vec3((dither - 0.5) / 255.0);
